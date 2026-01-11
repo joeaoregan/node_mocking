@@ -12,9 +12,11 @@ From service-mocking, rapid-prototyping and real-time applications to Command Li
 
 #### Server:
 
-```npm install @fastify/cors --save```
-
-```npm install @fastify/autoload```
+```
+npm install @fastify/cors --save 
+npm install @fastify/autoload
+npm install @fastify/websocket
+```
 
 ### Get running
 
