@@ -14,6 +14,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "got": "^14.6.6"
+    "got": "^14.6.6",
+    "minimist": "^1.2.8"
   }
 }
