@@ -8,3 +8,5 @@ From service-mocking, rapid-prototyping and real-time applications to Command Li
 
 
 File Server: `serve -p 5050 static`
+
+Server: `node server.js`
