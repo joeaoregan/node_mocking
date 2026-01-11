@@ -41,3 +41,26 @@ http://localhost:3000/electronics
 
 http://localhost:3000/confectionery
 ```
+
+#### Command Line Tool
+
+```
+my-cli
+
+my-cli A1 -n 5
+
+my-cli --amount 15 A2
+```
+
+List categories / ids:
+
+```
+my-cli list cats
+
+my-cli list ids --cat electronics
+```
+
+Add / update an order
+```
+my-cli add order --amount 999 A3
+```
