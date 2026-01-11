@@ -4,58 +4,53 @@ const WS_API = "ws://localhost:3000";
 const populateProducts = async (category, method = "GET", payload) => {
   const products = document.querySelector("#products");
   products.innerHTML = "";
-  const send =
-    method === "GET"
-      ? {}
-      : {
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        };
-  const res = await fetch(`${API}/${category}`, { method, ...send });
+  const options = method === "GET" ? {} : {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  };
+  const res = await fetch(`${API}/${category}`, options);
   const data = await res.json();
   for (const product of data) {
     const item = document.createElement("product-item");
-    item.dataset.id = product.id;
+    // CRITICAL: Link the HTML element to the ID (A1, A2, etc)
+    item.dataset.id = product.id; 
     for (const key of ["name", "rrp", "info"]) {
       const span = document.createElement("span");
       span.slot = key;
       span.textContent = product[key];
       item.appendChild(span);
     }
+
+    const ordersSpan = document.createElement("span");
+    ordersSpan.slot = "orders";
+    ordersSpan.textContent = product.total ?? 0;
+    item.appendChild(ordersSpan);
+
     products.appendChild(item);
   }
 };
 
-const category = document.querySelector("#category");
-const add = document.querySelector("#add");
-
 let socket = null;
 const realtimeOrders = (category) => {
-  if (socket === null) {
-    socket = new WebSocket(`${WS_API}/orders/${category}`);
-  } else {
-    socket.send(
-      JSON.stringify({ cmd: "update-category", payload: { category } })
-    );
-  }
+  if (socket) socket.close();
+  // URL updated to match the backend /ws/ path
+  socket = new WebSocket(`${WS_API}/orders/ws/${category}`);
+
   socket.addEventListener("message", ({ data }) => {
-    try {
-      const { id, total } = JSON.parse(data);
-      const item = document.querySelector(`[data-id="${id}"]`);
-      if (item === null) return;
-      const span =
-        item.querySelector('[slot="orders"]') || document.createElement("span");
-      span.slot = "orders";
-      span.textContent = total;
-      item.appendChild(span);
-    } catch (err) {
-      console.error(err);
+    const { id, total } = JSON.parse(data);
+    // Find the item by the data-id we set in populateProducts
+    const item = document.querySelector(`product-item[data-id="${id}"]`);
+    if (item) {
+      const span = item.querySelector('[slot="orders"]');
+      if (span) span.textContent = total;
     }
   });
 };
 
+const category = document.querySelector("#category");
 category.addEventListener("input", async ({ target }) => {
-  add.style.display = "block";
+  document.querySelector("#add").style.display = "block";
   await populateProducts(target.value);
   realtimeOrders(target.value);
 });

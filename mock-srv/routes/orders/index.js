@@ -1,41 +1,23 @@
 "use strict";
 
 module.exports = async function (fastify, opts) {
-  function monitorMessages(socket) {
-    socket.on("message", (data) => {
-      try {
-        const { cmd, payload } = JSON.parse(data);
-        if (cmd === "update-category") {
-          sendCurrentOrders(payload.category, socket);
-        }
-      } catch (err) {
-        fastify.log.warn(
-          "WebSocket Message (data: %o) Error: %s",
-          data,
-          err.message
-        );
-      }
-    });
-  }
+  // 1. Path changed to /ws/:category to avoid collision
+  fastify.get("/ws/:category", { websocket: true }, async (a, b) => {
+    // 2. Argument check to find the socket correctly
+    const socket = a.socket ? a.socket : a;
+    const category = b.params.category;
 
-  function sendCurrentOrders(category, socket) {
+    // 3. Added this loop so '0' becomes '3' immediately on connect
     for (const order of fastify.currentOrders(category)) {
       socket.send(order);
     }
-  }
 
-  fastify.get(
-    "/:category",
-    { websocket: true },
-    async ({ socket }, request) => {
-      monitorMessages(socket);
-      sendCurrentOrders(request.params.category, socket);
-      for await (const order of fastify.realtimeOrders()) {
-        if (socket.readyState >= socket.CLOSING) break;
-        socket.send(order);
-      }
+    for await (const order of fastify.realtimeOrders()) {
+      if (socket.readyState >= socket.CLOSING) break;
+      socket.send(order);
     }
-  );
+  }
+);
 
   /*
   When a POST request is made, the id is destructured from request.params 
@@ -43,7 +25,8 @@ module.exports = async function (fastify, opts) {
   */
   fastify.post("/:id", async (request) => {
     const { id } = request.params;
-    fastify.addOrder(id, request.body.amount);
+    const amount = parseInt(request.body.amount) || 1;
+    fastify.addOrder(id, amount);
     return { ok: true };
   });
 };
