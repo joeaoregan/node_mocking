@@ -25,13 +25,19 @@ const populateProducts = async (category, method = "GET", payload) => {
     products.appendChild(item);
   }
 };
+
 const category = document.querySelector("#category");
 const add = document.querySelector("#add");
 
 let socket = null;
 const realtimeOrders = (category) => {
-  if (socket) socket.close();
-  socket = new WebSocket(`${WS_API}/orders/${category}`);
+  if (socket === null) {
+    socket = new WebSocket(`${WS_API}/orders/${category}`);
+  } else {
+    socket.send(
+      JSON.stringify({ cmd: "update-category", payload: { category } })
+    );
+  }
   socket.addEventListener("message", ({ data }) => {
     try {
       const { id, total } = JSON.parse(data);
@@ -47,6 +53,7 @@ const realtimeOrders = (category) => {
     }
   });
 };
+
 category.addEventListener("input", async ({ target }) => {
   add.style.display = "block";
   await populateProducts(target.value);
