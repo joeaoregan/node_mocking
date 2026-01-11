@@ -66,11 +66,13 @@ async function tui(api) {
   let products = await got(`${api}/${category}`).json();
   let quit = false;
   while (true) {
+    console.log(ansiEsc.clearTerminal); 
+    console.log(chalk`{green ✔} {bold Category} {dim ·} {cyan ${category}}\n`);
+    
     for (const { name, rrp, info } of products) {
-      console.log(chalk`
-        {bold ${name}} - {italic ${rrp}}
-        ${info}
-       `);
+      const line1 = `${chalk.bold(name)} - ${chalk.italic(rrp)}`;
+      const line2 = `${info}`;
+      console.log(`${line1}\n${line2}\n`);
     }
     const form = new enquirer.Form({
       message: "Add",
@@ -99,19 +101,20 @@ async function tui(api) {
       add = await form.run();
     } catch (err) {
       if (quit) {
-        console.log(ansi.Esc.clearTerminal);
+        console.log(ansiEsc.clearTerminal);
         return tui(api);
       }
       throw err;
     }
     products = await got.post(`${api}/${category}`, { json: add }).json();
     console.log(ansiEsc.clearTerminal);
+
     console.log(chalk`{green ✔} {bold Category} {dim ·} {cyan ${category}}`);
   }
 }
 
 async function addOrder(argv) {
-  const args = minimist(args, {
+  const args = minimist(argv, {
     alias: { amount: "n" },
     string: ["api"],
     default: { api: API },
