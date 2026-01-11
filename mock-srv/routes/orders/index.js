@@ -1,4 +1,5 @@
 "use strict";
+
 module.exports = async function (fastify, opts) {
   function monitorMessages(socket) {
     socket.on("message", (data) => {
@@ -35,4 +36,14 @@ module.exports = async function (fastify, opts) {
       }
     }
   );
+
+  /*
+  When a POST request is made, the id is destructured from request.params 
+  and passed to the fastify.addOrder method along with request.body.amount
+  */
+  fastify.post("/:id", async (request) => {
+    const { id } = request.params;
+    fastify.addOrder(id, request.body.amount);
+    return { ok: true };
+  });
 };
