@@ -8,7 +8,11 @@ From service-mocking, rapid-prototyping and real-time applications to Command Li
 
 ### Stuff:
 
-* Uses Fastify service
+Uses:
+* Fastify service
+* Minimist: to parse command line arguments
+* Commist: to support sub-command arguments
+* Chalks, Ansi-escapes, Enquirer: to implement an interactive module
 
 #### Server:
 
